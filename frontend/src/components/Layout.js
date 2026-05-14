@@ -60,6 +60,8 @@ function Layout({ children }) {
     { to: '/ai/player-development', icon: <FaChartLine />, label: 'Player Development' },
     { to: '/ai/game-predictions', icon: <FaBrain />, label: 'Game Predictions' },
     { to: '/ai/communication-generator', icon: <FaRobot />, label: 'Communication Gen' },
+    { to: '/ai/postgame-summary', icon: <FaTrophy />, label: 'Postgame Summary' },
+    { to: '/ai/injury-risk', icon: <FaBolt />, label: 'Injury Risk' },
   ];
 
   return (

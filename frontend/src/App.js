@@ -20,6 +20,8 @@ import AIRefereeMatcher from './pages/AIRefereeMatcher';
 import AIPlayerDevelopment from './pages/AIPlayerDevelopment';
 import AIGamePredictions from './pages/AIGamePredictions';
 import AICommunicationGenerator from './pages/AICommunicationGenerator';
+import AIPostgameSummary from './pages/AIPostgameSummary';
+import AIInjuryRisk from './pages/AIInjuryRisk';
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -61,6 +63,8 @@ function App() {
         <Route path="/ai/player-development" element={<ProtectedRoute><AIPlayerDevelopment /></ProtectedRoute>} />
         <Route path="/ai/game-predictions" element={<ProtectedRoute><AIGamePredictions /></ProtectedRoute>} />
         <Route path="/ai/communication-generator" element={<ProtectedRoute><AICommunicationGenerator /></ProtectedRoute>} />
+        <Route path="/ai/postgame-summary" element={<ProtectedRoute><AIPostgameSummary /></ProtectedRoute>} />
+        <Route path="/ai/injury-risk" element={<ProtectedRoute><AIInjuryRisk /></ProtectedRoute>} />
       </Routes>
     </>
   );
