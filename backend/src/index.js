@@ -21,6 +21,9 @@ app.use('/api/communications', require('./routes/communications'));
 app.use('/api/seasons', require('./routes/seasons'));
 app.use('/api/standings', require('./routes/standings'));
 app.use('/api/ai', require('./routes/ai'));
+// Apply pass 5 — backlog extensions (volunteers, fundraising, tournaments, recruitment, fair-play, LTAD)
+app.use('/api/league-ext', require('./routes/extensions'));
+app.use('/api/custom', require('./routes/customFeatures'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -28,6 +31,13 @@ app.get('/api/health', (req, res) => {
 });
 
 // 404 handler
+// // === Batch 09 Gaps & Frontend Mounts ===
+app.use('/api/gap-ai-aiyouthsportsleaguemanager', require('./routes/batch09GapAi')); // // === Batch 09 Gaps & Frontend Mounts ===
+app.use('/api/gap-nonai-aiyouthsportsleaguemanager', require('./routes/batch09GapNonai')); // // === Batch 09 Gaps & Frontend Mounts ===
+
+// Custom Views (League Views) - mounted BEFORE 404
+app.use('/api/custom-views', require('./routes/customViews'));
+
 app.use((req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found.` });
 });
@@ -47,3 +57,5 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
+

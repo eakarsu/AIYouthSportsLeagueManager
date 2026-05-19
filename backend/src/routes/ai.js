@@ -401,4 +401,163 @@ Generate a polished, professional communication ready to send.`;
   }
 });
 
+// Helper: detect missing OpenRouter API key configuration error
+function isMissingKeyError(err) {
+  const msg = (err && err.message) || '';
+  return msg.includes('OPENROUTER_API_KEY');
+}
+
+// POST /api/ai/postgame-summary
+router.post('/postgame-summary', authenticate, async (req, res) => {
+  try {
+    const { game, home_team, away_team, stats, highlights, audience } = req.body;
+
+    if (!game) {
+      return res.status(400).json({ error: 'Game data is required.' });
+    }
+
+    const systemPrompt = `You are a friendly youth-sports recap writer. Produce a concise, age-appropriate postgame summary that celebrates effort, sportsmanship, and standout moments without singling out players for criticism.
+
+Return a JSON object with this structure:
+{
+  "summary": {
+    "headline": "<string - one-line recap>",
+    "story": "<string - 2-3 paragraph game story>",
+    "final_score": "<string>",
+    "mvp": { "player_name": "<string>", "reason": "<string>" }
+  },
+  "highlights": [
+    { "moment": "<string>", "description": "<string>", "player_name": "<string|null>" }
+  ],
+  "team_notes": {
+    "home": "<string>",
+    "away": "<string>"
+  },
+  "shareable_post": "<string - short social-media style version>",
+  "notes": "<string with overall tone/style notes>"
+}`;
+
+    const userPrompt = `Write a postgame summary for the following youth league game.
+
+Game:
+${JSON.stringify(game, null, 2)}
+
+${home_team ? `Home team:\n${JSON.stringify(home_team, null, 2)}` : ''}
+${away_team ? `Away team:\n${JSON.stringify(away_team, null, 2)}` : ''}
+${stats ? `Stats:\n${JSON.stringify(stats, null, 2)}` : ''}
+${highlights ? `Highlights / notes:\n${JSON.stringify(highlights, null, 2)}` : ''}
+
+Audience: ${audience || 'parents and players'}
+
+Keep the tone positive, age-appropriate, and focused on effort and fun.`;
+
+    let aiResponse;
+    try {
+      aiResponse = await callOpenRouter(systemPrompt, userPrompt);
+    } catch (err) {
+      if (isMissingKeyError(err)) {
+        return res.status(503).json({ error: 'AI service unavailable: OPENROUTER_API_KEY is not configured.' });
+      }
+      throw err;
+    }
+
+    try {
+      const [analysis] = await db('ai_analyses')
+        .insert({
+          type: 'postgame_summary',
+          input_data: JSON.stringify({ game, home_team, away_team, stats, highlights, audience }),
+          output_data: JSON.stringify(aiResponse.result),
+          model_used: aiResponse.model_used,
+        })
+        .returning('*');
+      return res.json({ analysis_id: analysis.id, ...aiResponse.result });
+    } catch (dbErr) {
+      // If persistence fails, still return AI result
+      return res.json({ ...aiResponse.result });
+    }
+  } catch (err) {
+    console.error('Postgame summary error:', err.message);
+    res.status(500).json({ error: 'Failed to generate postgame summary.' });
+  }
+});
+
+// POST /api/ai/injury-risk
+router.post('/injury-risk', authenticate, async (req, res) => {
+  try {
+    const { player, recent_games, training_load, season_context } = req.body;
+
+    if (!player) {
+      return res.status(400).json({ error: 'Player data is required.' });
+    }
+
+    const systemPrompt = `You are a youth-sports sports-medicine analyst. Estimate relative injury risk for a young athlete based on recent activity patterns and provide age-appropriate, conservative recommendations. This is informational only and is NOT medical advice; emphasize consulting qualified medical professionals for any concerns.
+
+Return a JSON object with this structure:
+{
+  "risk_assessment": {
+    "overall_risk_level": "<low|moderate|elevated|high>",
+    "risk_score": <number 0-100>,
+    "primary_factors": [
+      { "factor": "<string>", "impact": "<low|moderate|high>", "explanation": "<string>" }
+    ]
+  },
+  "body_area_focus": [
+    { "area": "<string e.g. knees, shoulder>", "concern": "<string>", "recommended_action": "<string>" }
+  ],
+  "load_management": {
+    "current_load_observation": "<string>",
+    "recommended_changes": ["<string>"]
+  },
+  "recovery_plan": {
+    "rest_days_recommended": <number>,
+    "drills_to_avoid_temporarily": ["<string>"],
+    "recommended_warmups": ["<string>"]
+  },
+  "warning_signs": ["<string>"],
+  "disclaimer": "Informational only — not medical advice. Consult a qualified medical professional for any injury concerns.",
+  "notes": "<string with overall analysis>"
+}`;
+
+    const userPrompt = `Analyze the following youth athlete's recent activity and assess injury risk.
+
+Player:
+${JSON.stringify(player, null, 2)}
+
+${recent_games ? `Recent games / minutes / intensity:\n${JSON.stringify(recent_games, null, 2)}` : 'No recent game data available.'}
+
+${training_load ? `Training load:\n${JSON.stringify(training_load, null, 2)}` : 'No training load data available.'}
+
+${season_context ? `Season context:\n${JSON.stringify(season_context, null, 2)}` : ''}
+
+Provide a conservative, age-appropriate risk assessment with clear non-medical-advice framing.`;
+
+    let aiResponse;
+    try {
+      aiResponse = await callOpenRouter(systemPrompt, userPrompt);
+    } catch (err) {
+      if (isMissingKeyError(err)) {
+        return res.status(503).json({ error: 'AI service unavailable: OPENROUTER_API_KEY is not configured.' });
+      }
+      throw err;
+    }
+
+    try {
+      const [analysis] = await db('ai_analyses')
+        .insert({
+          type: 'injury_risk',
+          input_data: JSON.stringify({ player, recent_games, training_load, season_context }),
+          output_data: JSON.stringify(aiResponse.result),
+          model_used: aiResponse.model_used,
+        })
+        .returning('*');
+      return res.json({ analysis_id: analysis.id, ...aiResponse.result });
+    } catch (dbErr) {
+      return res.json({ ...aiResponse.result });
+    }
+  } catch (err) {
+    console.error('Injury risk error:', err.message);
+    res.status(500).json({ error: 'Failed to generate injury risk assessment.' });
+  }
+});
+
 module.exports = router;

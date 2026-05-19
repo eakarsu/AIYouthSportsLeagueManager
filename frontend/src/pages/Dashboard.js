@@ -75,6 +75,8 @@ function Dashboard() {
     { to: '/ai/player-development', icon: <FaChartLine />, title: 'AI Player Development', desc: 'Track and predict player growth trajectories' },
     { to: '/ai/game-predictions', icon: <FaBrain />, title: 'AI Game Predictions', desc: 'AI predictions for upcoming game outcomes' },
     { to: '/ai/communication-generator', icon: <FaRobot />, title: 'AI Communication Generator', desc: 'Auto-generate emails, announcements, and reports' },
+    { to: '/ai/postgame-summary', icon: <FaTrophy />, title: 'AI Postgame Summary', desc: 'Generate friendly, age-appropriate game recaps' },
+    { to: '/ai/injury-risk', icon: <FaChartLine />, title: 'AI Injury Risk', desc: 'Conservative injury risk insights (informational only)' },
   ];
 
   return (

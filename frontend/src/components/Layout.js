@@ -20,6 +20,7 @@ import {
   FaBars,
   FaChevronLeft,
   FaBolt,
+  FaLayerGroup,
 } from 'react-icons/fa';
 
 function Layout({ children }) {
@@ -60,6 +61,8 @@ function Layout({ children }) {
     { to: '/ai/player-development', icon: <FaChartLine />, label: 'Player Development' },
     { to: '/ai/game-predictions', icon: <FaBrain />, label: 'Game Predictions' },
     { to: '/ai/communication-generator', icon: <FaRobot />, label: 'Communication Gen' },
+    { to: '/ai/postgame-summary', icon: <FaTrophy />, label: 'Postgame Summary' },
+    { to: '/ai/injury-risk', icon: <FaBolt />, label: 'Injury Risk' },
   ];
 
   return (
@@ -123,6 +126,14 @@ function Layout({ children }) {
                 <span>{link.label}</span>
               </NavLink>
             ))}
+          </div>
+
+          <div className="nav-group">
+            <div className="nav-group-label">Custom</div>
+            <NavLink to="/custom-views" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <span className="nav-icon"><FaLayerGroup /></span>
+              <span>League Views</span>
+            </NavLink>
           </div>
 
           <div className="nav-group">
