@@ -22,6 +22,7 @@ import AIGamePredictions from './pages/AIGamePredictions';
 import AICommunicationGenerator from './pages/AICommunicationGenerator';
 import AIPostgameSummary from './pages/AIPostgameSummary';
 import AIInjuryRisk from './pages/AIInjuryRisk';
+import CustomViewsPage from './pages/CustomViewsPage';
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -65,6 +66,7 @@ function App() {
         <Route path="/ai/communication-generator" element={<ProtectedRoute><AICommunicationGenerator /></ProtectedRoute>} />
         <Route path="/ai/postgame-summary" element={<ProtectedRoute><AIPostgameSummary /></ProtectedRoute>} />
         <Route path="/ai/injury-risk" element={<ProtectedRoute><AIInjuryRisk /></ProtectedRoute>} />
+        <Route path="/custom-views" element={<ProtectedRoute><CustomViewsPage /></ProtectedRoute>} />
       </Routes>
     </>
   );

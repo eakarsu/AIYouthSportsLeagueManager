@@ -20,6 +20,7 @@ import {
   FaBars,
   FaChevronLeft,
   FaBolt,
+  FaLayerGroup,
 } from 'react-icons/fa';
 
 function Layout({ children }) {
@@ -125,6 +126,14 @@ function Layout({ children }) {
                 <span>{link.label}</span>
               </NavLink>
             ))}
+          </div>
+
+          <div className="nav-group">
+            <div className="nav-group-label">Custom</div>
+            <NavLink to="/custom-views" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <span className="nav-icon"><FaLayerGroup /></span>
+              <span>League Views</span>
+            </NavLink>
           </div>
 
           <div className="nav-group">

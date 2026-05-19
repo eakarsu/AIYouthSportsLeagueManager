@@ -35,6 +35,9 @@ app.get('/api/health', (req, res) => {
 app.use('/api/gap-ai-aiyouthsportsleaguemanager', require('./routes/batch09GapAi')); // // === Batch 09 Gaps & Frontend Mounts ===
 app.use('/api/gap-nonai-aiyouthsportsleaguemanager', require('./routes/batch09GapNonai')); // // === Batch 09 Gaps & Frontend Mounts ===
 
+// Custom Views (League Views) - mounted BEFORE 404
+app.use('/api/custom-views', require('./routes/customViews'));
+
 app.use((req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found.` });
 });
