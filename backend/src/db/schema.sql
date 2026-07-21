@@ -2,6 +2,12 @@
 -- AI Youth Sports League Manager - Database Schema
 -- ============================================================
 
+\if :{?allow_legacy_reset}
+\else
+\echo 'Legacy destructive reset disabled; pass -v allow_legacy_reset=1 only for an isolated non-production database.'
+\quit
+\endif
+
 -- Drop tables in reverse dependency order if they exist
 DROP TABLE IF EXISTS ai_analyses CASCADE;
 DROP TABLE IF EXISTS standings CASCADE;

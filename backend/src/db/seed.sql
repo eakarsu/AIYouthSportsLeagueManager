@@ -1,6 +1,11 @@
 -- ============================================================
 -- AI Youth Sports League Manager - Seed Data
 -- ============================================================
+\if :{?allow_demo_seed}
+\else
+\echo 'Demo seed disabled; pass -v allow_demo_seed=1 only for an isolated non-production database.'
+\quit
+\endif
 -- Run after schema.sql
 -- All user passwords are bcrypt hash of 'password123'
 -- ============================================================
