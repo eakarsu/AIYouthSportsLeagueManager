@@ -1,12 +1,16 @@
 const axios = require('axios');
 
 async function callOpenRouter(systemPrompt, userPrompt) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  const model = process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5';
-  const baseUrl = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
+  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
+  const model = process.env.OPENROUTER_MODEL?.trim();
+  const baseUrl = process.env.OPENROUTER_BASE_URL?.trim().replace(/\/$/, '');
 
   if (!apiKey || apiKey === 'your_openrouter_api_key_here') {
     throw new Error('OPENROUTER_API_KEY is not configured. Please set it in your .env file.');
+  }
+  if (!model) throw new Error('OPENROUTER_MODEL is required.');
+  if (baseUrl !== 'https://openrouter.ai/api/v1') {
+    throw new Error('OPENROUTER_BASE_URL must be https://openrouter.ai/api/v1.');
   }
 
   const response = await axios.post(
