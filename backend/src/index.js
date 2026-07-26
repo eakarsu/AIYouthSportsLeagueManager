@@ -51,15 +51,21 @@ app.use((_req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use((error, _req, res, _next) => res.status(error.status || 500).json({ error: error.status ? error.message : 'Internal server error' }));
 
 async function ensureTestUser() {
-  if (process.env.NODE_ENV !== 'test') return;
+  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_DEMO_CREDENTIAL_AUTOFILL === 'false') return;
   const email = process.env.ADMIN_EMAIL || process.env.DEMO_EMAIL;
   const password = process.env.ADMIN_PASSWORD || process.env.DEMO_PASSWORD;
   if (!email || !password) throw new Error('Explicit test administrator credentials are required');
-  await db.schema.createTableIfNotExists('users', (table) => {
-    table.increments('id').primary(); table.string('email').notNullable().unique();
-    table.string('password_hash').notNullable(); table.string('name').notNullable();
-    table.string('role').notNullable().defaultTo('parent'); table.timestamp('created_at').defaultTo(db.fn.now());
-  });
+  // Knex's createTableIfNotExists still emits column/constraint alterations
+  // against an existing table. That makes a second start fail while trying to
+  // recreate the users_email_unique constraint. Check first and create only
+  // when the table is genuinely absent.
+  if (!await db.schema.hasTable('users')) {
+    await db.schema.createTable('users', (table) => {
+      table.increments('id').primary(); table.string('email').notNullable().unique();
+      table.string('password_hash').notNullable(); table.string('name').notNullable();
+      table.string('role').notNullable().defaultTo('parent'); table.timestamp('created_at').defaultTo(db.fn.now());
+    });
+  }
   const hash = await bcrypt.hash(password, 10);
   const existing = await db('users').where({ email }).first();
   if (existing) await db('users').where({ email }).update({ password_hash: hash });
