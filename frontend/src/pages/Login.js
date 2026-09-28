@@ -97,7 +97,7 @@ function Login() {
 
         <button className="quick-login-btn" onClick={handleQuickLogin} type="button">
           <FaBolt />
-          Quick Login (Demo Credentials)
+          Auto Fill Demo Credentials
         </button>
       </div>
     </div>
