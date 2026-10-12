@@ -9,7 +9,7 @@ function RosterPDF() {
   const load = (id) => {
     setLoading(true);
     api.get(`/custom-views/roster-pdf?team_id=${id}&format=json`)
-      .then((r) => setMeta(r.data))
+      .then((r) => setMeta({ ...r.data, players: Array.isArray(r.data?.players) ? r.data.players : [] }))
       .finally(() => setLoading(false));
   };
 

@@ -5,6 +5,7 @@ import {
   FaCalendarAlt, FaUsers, FaInfoCircle, FaTrophy
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import Modal from '../components/Modal';
 
 const STATUSES = ['upcoming', 'active', 'completed', 'cancelled'];
@@ -33,7 +34,7 @@ function Seasons() {
     try {
       setLoading(true);
       const res = await api.get('/seasons');
-      setSeasons(Array.isArray(res.data) ? res.data : res.data.seasons || res.data.data || []);
+      setSeasons(recordsFrom(res.data, 'seasons'));
     } catch (err) {
       toast.error('Failed to load seasons');
     } finally {

@@ -10,7 +10,7 @@ function LeagueRulesEditor() {
   const refresh = () => {
     setLoading(true);
     api.get('/custom-views/league-rules')
-      .then((r) => setState(r.data))
+      .then((r) => setState({ ...r.data, rules: r.data?.rules || {}, age_divisions: Array.isArray(r.data?.age_divisions) ? r.data.age_divisions : [] }))
       .finally(() => setLoading(false));
   };
 

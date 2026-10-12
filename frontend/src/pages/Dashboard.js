@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { recordsFrom } from '../services/records';
 import {
   FaUsers,
   FaFutbol,
@@ -50,7 +51,7 @@ function Dashboard() {
       fetch(url, { headers })
         .then((res) => (res.ok ? res.json() : []))
         .then((data) => {
-          const count = Array.isArray(data) ? data.length : 0;
+          const count = recordsFrom(data, key).length;
           setCounts((prev) => ({ ...prev, [key]: count }));
         })
         .catch(() => {});

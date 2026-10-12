@@ -38,9 +38,13 @@ function Login() {
     }
   };
 
+  const demoEmail = process.env.REACT_APP_DEMO_EMAIL;
+  const demoPassword = process.env.REACT_APP_DEMO_PASSWORD;
+  const demoAvailable = Boolean(demoEmail && demoPassword);
   const handleQuickLogin = () => {
-    setEmail(process.env.REACT_APP_DEMO_EMAIL || '');
-    setPassword(process.env.REACT_APP_DEMO_PASSWORD || '');
+    if (!demoAvailable) return;
+    setEmail(demoEmail);
+    setPassword(demoPassword);
   };
 
   return (
@@ -95,10 +99,11 @@ function Login() {
 
         <div className="login-divider">or</div>
 
-        <button className="quick-login-btn" onClick={handleQuickLogin} type="button">
+        <button className="quick-login-btn" onClick={handleQuickLogin} type="button" disabled={!demoAvailable}>
           <FaBolt />
-          Auto Fill Demo Credentials
+          Fill Demo Credentials
         </button>
+        {!demoAvailable && <p role="status">Demo credentials are not configured for this browser build. Sign in with your existing account.</p>}
       </div>
     </div>
   );

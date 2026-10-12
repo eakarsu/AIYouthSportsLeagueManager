@@ -8,7 +8,7 @@ function TeamStandingsChart() {
 
   useEffect(() => {
     api.get('/custom-views/team-standings-chart')
-      .then((r) => setData(r.data))
+      .then((r) => setData({ ...r.data, teams: Array.isArray(r.data?.teams) ? r.data.teams : [] }))
       .catch((e) => setErr(e.message))
       .finally(() => setLoading(false));
   }, []);

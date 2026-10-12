@@ -5,6 +5,7 @@ import {
   FaUser, FaEnvelope, FaPhone, FaStar, FaRegStar, FaCalendarAlt, FaCertificate
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import Modal from '../components/Modal';
 
 const CERTIFICATION_LEVELS = ['grassroots', 'regional', 'national', 'fifa'];
@@ -34,7 +35,7 @@ function Referees() {
     try {
       setLoading(true);
       const res = await api.get('/referees');
-      setReferees(Array.isArray(res.data) ? res.data : res.data.referees || res.data.data || []);
+      setReferees(recordsFrom(res.data, 'referees'));
     } catch (err) {
       toast.error('Failed to load referees');
     } finally {

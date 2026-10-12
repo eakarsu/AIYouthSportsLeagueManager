@@ -6,7 +6,9 @@ import {
   FaStar, FaExclamationTriangle, FaCheck, FaClock,
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import AIResultDisplay from '../components/AIResultDisplay';
+import NativeAIPresets from '../components/NativeAIPresets';
 
 function AIRefereeMatcher() {
   const [referees, setReferees] = useState([]);
@@ -26,8 +28,8 @@ function AIRefereeMatcher() {
         api.get('/referees'),
         api.get('/games'),
       ]);
-      const r = Array.isArray(refRes.data) ? refRes.data : refRes.data.referees || refRes.data.data || [];
-      const g = Array.isArray(gamesRes.data) ? gamesRes.data : gamesRes.data.games || gamesRes.data.data || [];
+      const r = recordsFrom(refRes.data, 'referees');
+      const g = recordsFrom(gamesRes.data, 'games');
       setReferees(r);
       setGames(g);
     } catch (err) {
@@ -97,7 +99,7 @@ function AIRefereeMatcher() {
         referees,
         games: gamesToMatch,
       });
-      const aiResult = res.data.result || res.data.analysis || res.data.message || JSON.stringify(res.data);
+      const aiResult = res.data.result ?? res.data.analysis ?? res.data.message ?? res.data;
       setResult(aiResult);
       setHistory(prev => [{
         id: Date.now(),
@@ -126,8 +128,15 @@ function AIRefereeMatcher() {
     );
   }
 
+  const samplePresets = [{ label: 'Upcoming match' }, { label: 'Alternate match' }, { label: 'Assignment review' }];
+  const fillSample = (index) => {
+    if (!(games.length && referees.length)) return;
+    setSelectedGames([games[index % games.length].id || games[index % games.length]._id]); setFilterUnassigned(false);
+  };
+
   return (
     <div>
+      <NativeAIPresets presets={samplePresets} onSelect={fillSample} prerequisite={games.length && referees.length ? null : 'Add games and referees before matching.'} />
       <div className="page-header">
         <div className="page-header-actions">
           <div>
@@ -363,7 +372,7 @@ function AIRefereeMatcher() {
       )}
 
       {/* AI Results */}
-      {result && !analyzing && (
+      {result !== null && result !== undefined && !analyzing && (
         <div className="card" style={{ marginBottom: 24, borderTop: '4px solid #8b5cf6' }}>
           <div className="card-body">
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>

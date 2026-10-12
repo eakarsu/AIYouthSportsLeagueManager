@@ -6,7 +6,9 @@ import {
   FaBuilding, FaExclamationTriangle,
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import AIResultDisplay from '../components/AIResultDisplay';
+import NativeAIPresets from '../components/NativeAIPresets';
 
 function AIScheduleOptimizer() {
   const [games, setGames] = useState([]);
@@ -36,9 +38,9 @@ function AIScheduleOptimizer() {
         api.get('/facilities').catch(() => ({ data: [] })),
         api.get('/teams'),
       ]);
-      setGames(Array.isArray(gamesRes.data) ? gamesRes.data : gamesRes.data.games || gamesRes.data.data || []);
-      setFacilities(Array.isArray(facilitiesRes.data) ? facilitiesRes.data : facilitiesRes.data.facilities || facilitiesRes.data.data || []);
-      setTeams(Array.isArray(teamsRes.data) ? teamsRes.data : teamsRes.data.teams || teamsRes.data.data || []);
+      setGames(recordsFrom(gamesRes.data, 'games'));
+      setFacilities(recordsFrom(facilitiesRes.data, 'facilities'));
+      setTeams(recordsFrom(teamsRes.data, 'teams'));
     } catch (err) {
       toast.error('Failed to load schedule data');
     } finally {
@@ -85,7 +87,7 @@ function AIScheduleOptimizer() {
         teams,
         preferences,
       });
-      const aiResult = res.data.result || res.data.analysis || res.data.message || JSON.stringify(res.data);
+      const aiResult = res.data.result ?? res.data.analysis ?? res.data.message ?? res.data;
       setResult(aiResult);
       setHistory(prev => [{
         id: Date.now(),
@@ -114,8 +116,14 @@ function AIScheduleOptimizer() {
     );
   }
 
+  const samplePresets = [{ label: 'Balanced plan' }, { label: 'Travel focus' }, { label: 'Facility focus' }];
+  const fillSample = (index) => {
+    setPreferences({ priority: ['balanced','minimize-travel','maximize-facility'][index], avoidBackToBack: [true,true,false][index], balanceHomeAway: [true,false,true][index], minimizeTravel: [false,true,false][index], maximizeFacilityUsage: [false,false,true][index], restDaysBetweenGames: [2,3,1][index], preferWeekends: [true,true,false][index] });
+  };
+
   return (
     <div>
+      <NativeAIPresets presets={samplePresets} onSelect={fillSample} prerequisite={games.length ? null : 'Add games before running an optimization.'} />
       <div className="page-header">
         <div className="page-header-actions">
           <div>
@@ -318,7 +326,7 @@ function AIScheduleOptimizer() {
       )}
 
       {/* AI Results */}
-      {result && !analyzing && (
+      {result !== null && result !== undefined && !analyzing && (
         <div className="card" style={{ marginBottom: 24, borderTop: '4px solid #3b82f6' }}>
           <div className="card-body">
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>

@@ -5,7 +5,9 @@ import {
   FaUser, FaExclamationTriangle, FaCopy, FaCheckCircle,
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import AIResultDisplay from '../components/AIResultDisplay';
+import NativeAIPresets from '../components/NativeAIPresets';
 
 function AIInjuryRisk() {
   const [players, setPlayers] = useState([]);
@@ -29,7 +31,7 @@ function AIInjuryRisk() {
     try {
       setLoading(true);
       const res = await api.get('/players').catch(() => ({ data: [] }));
-      setPlayers(Array.isArray(res.data) ? res.data : res.data.players || res.data.data || []);
+      setPlayers(recordsFrom(res.data, 'players'));
     } catch (err) {
       toast.error('Failed to load players');
     } finally {
@@ -109,8 +111,15 @@ function AIInjuryRisk() {
     );
   }
 
+  const samplePresets = [{ label: 'Typical week' }, { label: 'High load' }, { label: 'Return to play' }];
+  const fillSample = (index) => {
+    if (!(players.length)) return;
+    setSelectedPlayerId(current => current || String((players[index % players.length].id || players[index % players.length]._id))); setForm({ gamesLastWeek: ['1','2','0'][index], minutesLastWeek: ['55','90','0'][index], practicesPerWeek: ['2','3','1'][index], intensity: ['moderate','high','light'][index], pastInjuries: ['Prior ankle sprain; cleared to play.','No reported injuries.','Recovered from a minor muscle strain.'][index], currentSymptoms: ['No current symptoms reported.','Soreness after the last match.','No current symptoms; monitor return to play.'][index] });
+  };
+
   return (
     <div>
+      <NativeAIPresets presets={samplePresets} onSelect={fillSample} prerequisite={players.length ? null : 'Add a player before selecting a sample.'} />
       <div className="page-header">
         <div className="page-header-actions">
           <div>
@@ -213,7 +222,7 @@ function AIInjuryRisk() {
               </div>
             </div>
           )}
-          {result && !analyzing && (
+          {result !== null && result !== undefined && !analyzing && (
             <div className="card" style={{ marginBottom: 16, borderTop: '4px solid #6366f1' }}>
               <div className="card-body">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -233,7 +242,7 @@ function AIInjuryRisk() {
               </div>
             </div>
           )}
-          {!result && !analyzing && (
+          {(result === null || result === undefined) && !analyzing && (
             <div className="card">
               <div className="card-body" style={{ textAlign: 'center', padding: 64 }}>
                 <FaShieldAlt style={{ fontSize: 48, color: '#d1d5db', marginBottom: 16 }} />

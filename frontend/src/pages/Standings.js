@@ -5,6 +5,7 @@ import {
   FaFutbol, FaChartBar, FaMedal
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import Modal from '../components/Modal';
 
 const emptyForm = {
@@ -30,7 +31,7 @@ function Standings() {
     try {
       setLoading(true);
       const res = await api.get('/standings');
-      setStandings(Array.isArray(res.data) ? res.data : res.data.standings || res.data.data || []);
+      setStandings(recordsFrom(res.data, 'standings'));
     } catch (err) {
       toast.error('Failed to load standings');
     } finally {
@@ -41,14 +42,14 @@ function Standings() {
   const fetchTeams = useCallback(async () => {
     try {
       const res = await api.get('/teams');
-      setTeams(Array.isArray(res.data) ? res.data : res.data.teams || res.data.data || []);
+      setTeams(recordsFrom(res.data, 'teams'));
     } catch { /* optional */ }
   }, []);
 
   const fetchSeasons = useCallback(async () => {
     try {
       const res = await api.get('/seasons');
-      setSeasons(Array.isArray(res.data) ? res.data : res.data.seasons || res.data.data || []);
+      setSeasons(recordsFrom(res.data, 'seasons'));
     } catch { /* optional */ }
   }, []);
 

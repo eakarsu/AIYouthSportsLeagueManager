@@ -6,7 +6,14 @@ import {
   FaInfoCircle, FaPaperPlane
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import Modal from '../components/Modal';
+import AIReport from '../components/AIReport';
+
+const structuredMessage = (value) => {
+  if (typeof value !== 'string') return false;
+  try { const parsed = JSON.parse(value); return parsed !== null && typeof parsed === 'object'; } catch (_) { return false; }
+};
 
 const TYPES = ['announcement', 'alert', 'reminder', 'message', 'newsletter'];
 const PRIORITIES = ['high', 'medium', 'low'];
@@ -36,7 +43,7 @@ function Communications() {
     try {
       setLoading(true);
       const res = await api.get('/communications');
-      setCommunications(Array.isArray(res.data) ? res.data : res.data.communications || res.data.data || []);
+      setCommunications(recordsFrom(res.data, 'communications'));
     } catch (err) {
       toast.error('Failed to load communications');
     } finally {
@@ -47,7 +54,7 @@ function Communications() {
   const fetchTeams = useCallback(async () => {
     try {
       const res = await api.get('/teams');
-      setTeams(Array.isArray(res.data) ? res.data : res.data.teams || res.data.data || []);
+      setTeams(recordsFrom(res.data, 'teams'));
     } catch { /* teams optional */ }
   }, []);
 
@@ -341,7 +348,7 @@ function Communications() {
                 lineHeight: 1.7, whiteSpace: 'pre-wrap', fontSize: 14, color: '#374151',
                 border: '1px solid #e5e7eb'
               }}>
-                {selected.message || 'No message content'}
+                {structuredMessage(selected.message) ? <AIReport response={selected.message} title={selected.title || 'Saved AI communication'} /> : (selected.message || 'No message content')}
               </div>
             </div>
           </div>

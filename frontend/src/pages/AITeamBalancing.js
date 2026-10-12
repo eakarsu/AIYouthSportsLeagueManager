@@ -5,7 +5,9 @@ import {
   FaTrophy, FaExchangeAlt, FaCheckCircle, FaSpinner, FaHistory, FaTrash,
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import AIResultDisplay from '../components/AIResultDisplay';
+import NativeAIPresets from '../components/NativeAIPresets';
 
 function AITeamBalancing() {
   const [players, setPlayers] = useState([]);
@@ -25,8 +27,8 @@ function AITeamBalancing() {
         api.get('/players'),
         api.get('/teams'),
       ]);
-      const p = Array.isArray(playersRes.data) ? playersRes.data : playersRes.data.players || playersRes.data.data || [];
-      const t = Array.isArray(teamsRes.data) ? teamsRes.data : teamsRes.data.teams || teamsRes.data.data || [];
+      const p = recordsFrom(playersRes.data, 'players');
+      const t = recordsFrom(teamsRes.data, 'teams');
       setPlayers(p);
       setTeams(t);
       setSelectedTeams(t.map(team => team.id || team._id));
@@ -98,7 +100,7 @@ function AITeamBalancing() {
         players: filteredPlayers,
         teams: filteredTeams,
       });
-      const aiResult = res.data.result || res.data.analysis || res.data.message || JSON.stringify(res.data);
+      const aiResult = res.data.result ?? res.data.analysis ?? res.data.message ?? res.data;
       setResult(aiResult);
       setHistory(prev => [{
         id: Date.now(),
@@ -130,8 +132,15 @@ function AITeamBalancing() {
     );
   }
 
+  const samplePresets = [{ label: 'First teams' }, { label: 'Next teams' }, { label: 'Roster review' }];
+  const fillSample = (index) => {
+    if (!(teams.length >= 2)) return;
+    setSelectedTeams(teams.slice(index % Math.max(1, teams.length - 1), index % Math.max(1, teams.length - 1) + 2).map(team => team.id || team._id));
+  };
+
   return (
     <div>
+      <NativeAIPresets presets={samplePresets} onSelect={fillSample} prerequisite={teams.length >= 2 ? null : 'Add at least two teams before balancing.'} />
       <div className="page-header">
         <div className="page-header-actions">
           <div>
@@ -366,7 +375,7 @@ function AITeamBalancing() {
       )}
 
       {/* AI Results */}
-      {result && !analyzing && (
+      {result !== null && result !== undefined && !analyzing && (
         <div className="card" style={{ marginBottom: 24, borderTop: '4px solid #6366f1' }}>
           <div className="card-body">
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>

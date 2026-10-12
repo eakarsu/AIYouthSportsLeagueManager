@@ -11,7 +11,7 @@ function PracticeAttendanceHeatmap() {
 
   useEffect(() => {
     api.get('/custom-views/practice-attendance-heatmap?weeks=8')
-      .then((r) => setData(r.data))
+      .then((r) => setData({ ...r.data, players: Array.isArray(r.data?.players) ? r.data.players.map(p => ({ ...p, cells: Array.isArray(p.cells) ? p.cells : [] })) : [] }))
       .catch((e) => setErr(e.message))
       .finally(() => setLoading(false));
   }, []);

@@ -6,7 +6,9 @@ import {
   FaArrowRight, FaShieldAlt, FaClock, FaMapMarkerAlt,
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import AIResultDisplay from '../components/AIResultDisplay';
+import NativeAIPresets from '../components/NativeAIPresets';
 
 function AIGamePredictions() {
   const [games, setGames] = useState([]);
@@ -27,9 +29,9 @@ function AIGamePredictions() {
         api.get('/teams'),
         api.get('/standings').catch(() => ({ data: [] })),
       ]);
-      setGames(Array.isArray(gamesRes.data) ? gamesRes.data : gamesRes.data.games || gamesRes.data.data || []);
-      setTeams(Array.isArray(teamsRes.data) ? teamsRes.data : teamsRes.data.teams || teamsRes.data.data || []);
-      setStandings(Array.isArray(standingsRes.data) ? standingsRes.data : standingsRes.data.standings || standingsRes.data.data || []);
+      setGames(recordsFrom(gamesRes.data, 'games'));
+      setTeams(recordsFrom(teamsRes.data, 'teams'));
+      setStandings(recordsFrom(standingsRes.data, 'standings'));
     } catch (err) {
       toast.error('Failed to load data');
     } finally {
@@ -65,7 +67,7 @@ function AIGamePredictions() {
         awayTeam: getTeam(awayTeamId) || { name: getTeamName(awayTeamId) },
         standings,
       });
-      const aiResult = res.data.result || res.data.analysis || res.data.message || JSON.stringify(res.data);
+      const aiResult = res.data.result ?? res.data.analysis ?? res.data.message ?? res.data;
       setResult(aiResult);
       setHistory(prev => [{
         id: Date.now(),
@@ -99,8 +101,15 @@ function AIGamePredictions() {
   const homeStanding = homeTeamId ? getTeamStanding(homeTeamId) : null;
   const awayStanding = awayTeamId ? getTeamStanding(awayTeamId) : null;
 
+  const samplePresets = [{ label: 'Upcoming match' }, { label: 'Next fixture' }, { label: 'Match preview' }];
+  const fillSample = (index) => {
+    if (!(games.length)) return;
+    setSelectedGame(current => current || games[index % games.length]);
+  };
+
   return (
     <div>
+      <NativeAIPresets presets={samplePresets} onSelect={fillSample} prerequisite={games.length ? null : 'Add a game before selecting a sample.'} />
       <div className="page-header">
         <div className="page-header-actions">
           <div>
@@ -324,7 +333,7 @@ function AIGamePredictions() {
               )}
 
               {/* Results */}
-              {result && !analyzing && (
+              {result !== null && result !== undefined && !analyzing && (
                 <div className="card" style={{ marginBottom: 24, borderTop: '4px solid #ec4899' }}>
                   <div className="card-body">
                     <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>

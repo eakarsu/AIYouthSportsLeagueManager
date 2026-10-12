@@ -1,11 +1,16 @@
 // // === Batch 09 Gaps & Frontend Mounts ===
 import React, { useState } from 'react';
+import AIReport from '../../components/AIReport';
+import NativeAIPresets from '../../components/NativeAIPresets';
 
 export default function PostgameSummaryGenerationForParentsPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+
+  const samplePrompts = ['Write an encouraging U10 recap after a 2-1 game, noting teamwork and one key save.', 'Summarize a 1-1 U12 match for parents with balanced praise and next steps.', 'Draft a family-friendly tournament recap highlighting effort and sportsmanship.'];
+  const samplePresets = [{ label: 'League scenario' }, { label: 'Player scenario' }, { label: 'Event scenario' }];
 
   const run = async () => {
     setLoading(true); setError(''); setResult(null);
@@ -27,6 +32,7 @@ export default function PostgameSummaryGenerationForParentsPage() {
     <div style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Postgame summary generation for parents</h1>
       <p style={{ color: '#666', marginBottom: 16 }}>Generated gap feature for AIYouthSportsLeagueManager.</p>
+      <NativeAIPresets presets={samplePresets} onSelect={index => setInput(samplePrompts[index])} />
       <textarea
         value={input}
         onChange={e => setInput(e.target.value)}
@@ -42,11 +48,7 @@ export default function PostgameSummaryGenerationForParentsPage() {
         {loading ? 'Running...' : 'Run AI'}
       </button>
       {error && <div style={{ color: 'red', marginTop: 12 }}>{error}</div>}
-      {result && (
-        <pre style={{ marginTop: 16, padding: 12, background: '#f4f4f4', borderRadius: 6, overflow: 'auto', maxHeight: 500 }}>
-{JSON.stringify(result, null, 2)}
-        </pre>
-      )}
+      {result !== null && <AIReport response={result} title="AI analysis" />}
     </div>
   );
 }

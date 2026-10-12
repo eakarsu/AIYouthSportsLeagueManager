@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { FaCalendarAlt, FaPlus, FaSearch, FaEdit, FaTrash, FaSortUp, FaSortDown, FaSort, FaFutbol, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import Modal from '../components/Modal';
 
 const GAME_STATUSES = ['scheduled', 'in_progress', 'completed', 'cancelled', 'postponed'];
@@ -32,7 +33,7 @@ function Games() {
     try {
       setLoading(true);
       const res = await api.get('/games');
-      setGames(Array.isArray(res.data) ? res.data : res.data.games || res.data.data || []);
+      setGames(recordsFrom(res.data, 'games'));
     } catch (err) {
       toast.error('Failed to load games');
     } finally { setLoading(false); }
@@ -41,21 +42,21 @@ function Games() {
   const fetchTeams = useCallback(async () => {
     try {
       const res = await api.get('/teams');
-      setTeams(Array.isArray(res.data) ? res.data : res.data.teams || res.data.data || []);
+      setTeams(recordsFrom(res.data, 'teams'));
     } catch { /* optional */ }
   }, []);
 
   const fetchFacilities = useCallback(async () => {
     try {
       const res = await api.get('/facilities');
-      setFacilities(Array.isArray(res.data) ? res.data : res.data.facilities || res.data.data || []);
+      setFacilities(recordsFrom(res.data, 'facilities'));
     } catch { /* optional */ }
   }, []);
 
   const fetchReferees = useCallback(async () => {
     try {
       const res = await api.get('/referees');
-      setReferees(Array.isArray(res.data) ? res.data : res.data.referees || res.data.data || []);
+      setReferees(recordsFrom(res.data, 'referees'));
     } catch { /* optional */ }
   }, []);
 

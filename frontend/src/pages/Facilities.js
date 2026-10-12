@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { FaBuilding, FaPlus, FaSearch, FaEdit, FaTrash, FaSortUp, FaSortDown, FaSort, FaMapMarkerAlt, FaClock, FaCheck } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import Modal from '../components/Modal';
 
 const TYPES = ['Field', 'Court', 'Gym', 'Stadium'];
@@ -31,7 +32,7 @@ function Facilities() {
     try {
       setLoading(true);
       const res = await api.get('/facilities');
-      setFacilities(Array.isArray(res.data) ? res.data : res.data.facilities || res.data.data || []);
+      setFacilities(recordsFrom(res.data, 'facilities'));
     } catch (err) {
       toast.error('Failed to load facilities');
     } finally { setLoading(false); }

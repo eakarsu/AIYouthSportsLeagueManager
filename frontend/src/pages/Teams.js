@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { FaFutbol, FaPlus, FaSearch, FaEdit, FaTrash, FaSortUp, FaSortDown, FaSort, FaUsers } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import Modal from '../components/Modal';
 
 const emptyForm = {
@@ -30,7 +31,7 @@ function Teams() {
     try {
       setLoading(true);
       const res = await api.get('/teams');
-      setTeams(Array.isArray(res.data) ? res.data : res.data.teams || res.data.data || []);
+      setTeams(recordsFrom(res.data, 'teams'));
     } catch (err) {
       toast.error('Failed to load teams');
     } finally { setLoading(false); }
@@ -39,14 +40,14 @@ function Teams() {
   const fetchFacilities = useCallback(async () => {
     try {
       const res = await api.get('/facilities');
-      setFacilities(Array.isArray(res.data) ? res.data : res.data.facilities || res.data.data || []);
+      setFacilities(recordsFrom(res.data, 'facilities'));
     } catch { /* optional */ }
   }, []);
 
   const fetchSeasons = useCallback(async () => {
     try {
       const res = await api.get('/seasons');
-      setSeasons(Array.isArray(res.data) ? res.data : res.data.seasons || res.data.data || []);
+      setSeasons(recordsFrom(res.data, 'seasons'));
     } catch { /* optional */ }
   }, []);
 
@@ -56,7 +57,7 @@ function Teams() {
     setRosterLoading(true);
     try {
       const res = await api.get(`/players?team_id=${teamId}`);
-      setRoster(Array.isArray(res.data) ? res.data : res.data.players || res.data.data || []);
+      setRoster(recordsFrom(res.data, 'players'));
     } catch {
       setRoster([]);
     } finally { setRosterLoading(false); }

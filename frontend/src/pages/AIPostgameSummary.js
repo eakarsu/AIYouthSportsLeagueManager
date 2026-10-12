@@ -5,7 +5,9 @@ import {
   FaFutbol, FaTrophy, FaCopy, FaCheckCircle,
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import AIResultDisplay from '../components/AIResultDisplay';
+import NativeAIPresets from '../components/NativeAIPresets';
 
 function AIPostgameSummary() {
   const [games, setGames] = useState([]);
@@ -31,8 +33,8 @@ function AIPostgameSummary() {
         api.get('/games').catch(() => ({ data: [] })),
         api.get('/teams').catch(() => ({ data: [] })),
       ]);
-      setGames(Array.isArray(gamesRes.data) ? gamesRes.data : gamesRes.data.games || gamesRes.data.data || []);
-      setTeams(Array.isArray(teamsRes.data) ? teamsRes.data : teamsRes.data.teams || teamsRes.data.data || []);
+      setGames(recordsFrom(gamesRes.data, 'games'));
+      setTeams(recordsFrom(teamsRes.data, 'teams'));
     } catch (err) {
       toast.error('Failed to load games/teams');
     } finally {
@@ -115,8 +117,16 @@ function AIPostgameSummary() {
     );
   }
 
+  const samplePresets = [{ label: 'Close win' }, { label: 'Coach recap' }, { label: 'Player recap' }];
+  const fillSample = (index) => {
+    if (!(games.length)) return;
+    const game = games.find(item => String(item.id || item._id) === String(selectedGameId)) || games[index % games.length];
+    setSelectedGameId(current => current || String(game.id || game._id)); setForm({ homeScore: String(game.home_score ?? [2,1,3][index]), awayScore: String(game.away_score ?? [1,1,2][index]), audience: ['parents and players','coaches','players'][index], highlights: ['Strong teamwork and a late winning goal.','Both teams showed good sportsmanship.','A close match with several key saves.'][index] });
+  };
+
   return (
     <div>
+      <NativeAIPresets presets={samplePresets} onSelect={fillSample} prerequisite={games.length ? null : 'Add a game before selecting a sample.'} />
       <div className="page-header">
         <div className="page-header-actions">
           <div>
@@ -205,7 +215,7 @@ function AIPostgameSummary() {
               </div>
             </div>
           )}
-          {result && !generating && (
+          {result !== null && result !== undefined && !generating && (
             <div className="card" style={{ marginBottom: 16, borderTop: '4px solid #10b981' }}>
               <div className="card-body">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -225,7 +235,7 @@ function AIPostgameSummary() {
               </div>
             </div>
           )}
-          {!result && !generating && (
+          {(result === null || result === undefined) && !generating && (
             <div className="card">
               <div className="card-body" style={{ textAlign: 'center', padding: 64 }}>
                 <FaRegNewspaper style={{ fontSize: 48, color: '#d1d5db', marginBottom: 16 }} />

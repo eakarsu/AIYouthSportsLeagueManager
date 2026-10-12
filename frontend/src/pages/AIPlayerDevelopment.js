@@ -6,7 +6,9 @@ import {
   FaTrophy, FaArrowUp, FaSearch,
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import AIResultDisplay from '../components/AIResultDisplay';
+import NativeAIPresets from '../components/NativeAIPresets';
 
 function AIPlayerDevelopment() {
   const [players, setPlayers] = useState([]);
@@ -23,7 +25,7 @@ function AIPlayerDevelopment() {
     try {
       setLoading(true);
       const res = await api.get('/players');
-      const p = Array.isArray(res.data) ? res.data : res.data.players || res.data.data || [];
+      const p = recordsFrom(res.data, 'players');
       setPlayers(p);
     } catch (err) {
       toast.error('Failed to load players');
@@ -65,7 +67,7 @@ function AIPlayerDevelopment() {
         player: selectedPlayer,
         focusArea,
       });
-      const aiResult = res.data.result || res.data.analysis || res.data.message || JSON.stringify(res.data);
+      const aiResult = res.data.result ?? res.data.analysis ?? res.data.message ?? res.data;
       setResult(aiResult);
       setHistory(prev => [{
         id: Date.now(),
@@ -94,8 +96,15 @@ function AIPlayerDevelopment() {
     );
   }
 
+  const samplePresets = [{ label: 'Overall plan' }, { label: 'Technical skills' }, { label: 'Physical growth' }];
+  const fillSample = (index) => {
+    if (!(players.length)) return;
+    setSelectedPlayer(current => current || players[index % players.length]); setFocusArea(['overall','technical','physical'][index]); setSearch('');
+  };
+
   return (
     <div>
+      <NativeAIPresets presets={samplePresets} onSelect={fillSample} prerequisite={players.length ? null : 'Add a player before selecting a sample.'} />
       <div className="page-header">
         <div className="page-header-actions">
           <div>
@@ -336,7 +345,7 @@ function AIPlayerDevelopment() {
               )}
 
               {/* AI Results */}
-              {result && !analyzing && (
+              {result !== null && result !== undefined && !analyzing && (
                 <div className="card" style={{ marginBottom: 24, borderTop: '4px solid #10b981' }}>
                   <div className="card-body">
                     <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>

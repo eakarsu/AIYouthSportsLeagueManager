@@ -7,7 +7,9 @@ import {
   FaUserFriends, FaExclamationTriangle,
 } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import AIResultDisplay from '../components/AIResultDisplay';
+import NativeAIPresets from '../components/NativeAIPresets';
 
 const COMM_TYPES = [
   { key: 'welcome-letter', label: 'Welcome Letter', icon: <FaEnvelope />, color: '#6366f1', desc: 'Welcome new families to the league' },
@@ -47,7 +49,7 @@ function AICommunicationGenerator() {
     try {
       setLoading(true);
       const res = await api.get('/teams');
-      setTeams(Array.isArray(res.data) ? res.data : res.data.teams || res.data.data || []);
+      setTeams(recordsFrom(res.data, 'teams'));
     } catch (err) {
       toast.error('Failed to load teams');
     } finally {
@@ -81,7 +83,7 @@ function AICommunicationGenerator() {
         subject: form.subject,
         teamData,
       });
-      const aiResult = res.data.result || res.data.analysis || res.data.message || JSON.stringify(res.data);
+      const aiResult = res.data.result ?? res.data.analysis ?? res.data.message ?? res.data;
       setResult(aiResult);
       setHistory(prev => [{
         id: Date.now(),
@@ -117,10 +119,11 @@ function AICommunicationGenerator() {
     try {
       const text = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
       await api.post('/communications', {
-        subject: form.subject || `${selectedType?.label || 'Communication'} - ${new Date().toLocaleDateString()}`,
-        body: text,
-        type: form.type,
-        audience: form.audience,
+        title: form.subject || `${selectedType?.label || 'Communication'} - ${new Date().toLocaleDateString()}`,
+        message: text,
+        type: 'message',
+        recipient_type: form.audience === 'specific-team' ? 'team' : 'all',
+        ...(form.audience === 'specific-team' && form.teamId ? { team_id: form.teamId } : {}),
         status: 'draft',
       });
       toast.success('Saved to communications as draft!');
@@ -143,8 +146,15 @@ function AICommunicationGenerator() {
     );
   }
 
+  const samplePresets = [{ label: 'Welcome families' }, { label: 'Game reminder' }, { label: 'Schedule update' }];
+  const fillSample = (index) => {
+    if (!(teams.length)) return;
+    setForm({ type: ['welcome-letter','game-reminder','schedule-update'][index], audience: 'specific-team', teamId: String(teams[index % teams.length].id || teams[index % teams.length]._id), tone: ['friendly','urgent','formal'][index], subject: ['Welcome to the new season','Saturday game reminder','Updated practice schedule'][index], keyPoints: ['Introduce coaches, share the first practice date, and ask families to bring water.','Confirm the game time and location; remind families to bring uniforms and water.','Explain the revised practice time, location, and whom to contact with conflicts.'][index] });
+  };
+
   return (
     <div>
+      <NativeAIPresets presets={samplePresets} onSelect={fillSample} prerequisite={teams.length ? null : 'Add a team to fill the team audience field.'} />
       <div className="page-header">
         <div className="page-header-actions">
           <div>
@@ -325,7 +335,7 @@ function AICommunicationGenerator() {
           )}
 
           {/* Results */}
-          {result && !generating && (
+          {result !== null && result !== undefined && !generating && (
             <div className="card" style={{ marginBottom: 16, borderTop: `4px solid ${selectedType?.color || '#6366f1'}` }}>
               <div className="card-body">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -364,7 +374,7 @@ function AICommunicationGenerator() {
           )}
 
           {/* Empty State */}
-          {!result && !generating && (
+          {(result === null || result === undefined) && !generating && (
             <div className="card">
               <div className="card-body" style={{ textAlign: 'center', padding: 64 }}>
                 <FaMagic style={{ fontSize: 48, color: '#d1d5db', marginBottom: 16 }} />

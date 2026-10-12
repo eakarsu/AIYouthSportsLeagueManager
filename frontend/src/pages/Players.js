@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { FaUsers, FaPlus, FaSearch, FaEdit, FaTrash, FaSortUp, FaSortDown, FaSort, FaUser, FaPhone, FaMedkit, FaFutbol } from 'react-icons/fa';
 import api from '../services/api';
+import { recordsFrom } from '../services/records';
 import Modal from '../components/Modal';
 
 const POSITIONS = ['Forward', 'Midfielder', 'Defender', 'Goalkeeper'];
@@ -32,7 +33,7 @@ function Players() {
     try {
       setLoading(true);
       const res = await api.get('/players');
-      setPlayers(Array.isArray(res.data) ? res.data : res.data.players || res.data.data || []);
+      setPlayers(recordsFrom(res.data, 'players'));
     } catch (err) {
       toast.error('Failed to load players');
     } finally {
@@ -43,7 +44,7 @@ function Players() {
   const fetchTeams = useCallback(async () => {
     try {
       const res = await api.get('/teams');
-      setTeams(Array.isArray(res.data) ? res.data : res.data.teams || res.data.data || []);
+      setTeams(recordsFrom(res.data, 'teams'));
     } catch { /* teams optional */ }
   }, []);
 
