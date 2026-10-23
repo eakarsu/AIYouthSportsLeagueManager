@@ -8,7 +8,8 @@
     "dev": "nodemon src/index.js",
     "db:migrate": "knex migrate:latest --knexfile knexfile.js",
     "db:seed": "knex seed:run --knexfile knexfile.js",
-    "db:rollback": "knex migrate:rollback --knexfile knexfile.js"
+    "db:rollback": "knex migrate:rollback --knexfile knexfile.js",
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "axios": "^1.7.2",

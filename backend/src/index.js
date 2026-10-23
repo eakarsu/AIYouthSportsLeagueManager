@@ -32,7 +32,7 @@ const protectedRoutes = [
   ['/api/players','./routes/players'],['/api/teams','./routes/teams'],
   ['/api/facilities','./routes/facilities'],['/api/games','./routes/games'],
   ['/api/referees','./routes/referees'],['/api/communications','./routes/communications'],
-  ['/api/seasons','./routes/seasons'],['/api/standings','./routes/standings']
+  ['/api/seasons','./routes/seasons'],['/api/standings','./routes/standings'],['/api/tasks','./routes/tasks']
 ];
 for (const [mount, modulePath] of protectedRoutes) app.use(mount, require(modulePath));
 

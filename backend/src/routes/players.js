@@ -7,13 +7,20 @@ const router = express.Router();
 // GET /api/players - list all players with team name
 router.get('/', async (req, res) => {
   try {
-    const players = await db('players')
+    const { search, status, team_id } = req.query || {};
+    let query = db('players')
       .leftJoin('teams', 'players.team_id', 'teams.id')
       .select(
         'players.*',
         'teams.name as team_name'
-      )
-      .orderBy('players.last_name');
+      );
+    if (status) query = query.where('players.status', status);
+    if (team_id) query = query.where('players.team_id', team_id);
+    if (search) {
+      const q = `%${String(search).trim()}%`;
+      query = query.where((b) => b.whereILike('players.first_name', q).orWhereILike('players.last_name', q).orWhereILike('players.parent_email', q));
+    }
+    const players = await query.orderBy('players.last_name');
 
     res.json(players);
   } catch (err) {
